@@ -74,7 +74,8 @@ public class ICUService {
         // 6
         List<Species> filteredSpeciesByClass = filterSpeciesByClassName(availableSpecies.getResult(), speciesClassNameEnum);
 
-        SpeciesResponse response = generateResponseModel(filteredSpeciesByCategory, filteredSpeciesByClass, speciesMeasures);
+        SpeciesResponse response = generateResponseModel(region, speciesCategoryFilter, filteredSpeciesByCategory,
+                speciesClassNameEnum, filteredSpeciesByClass, speciesMeasures);
 
         return response;
     }
@@ -113,17 +114,35 @@ public class ICUService {
         return speciesMeasure.getResult().stream().map(x -> x.getTitle()).collect(Collectors.joining(","));
     }
 
-    private SpeciesResponse generateResponseModel(List<Species> filteredSpeciesByCategory,
+    private SpeciesResponse generateResponseModel(String region,
+                                                  SpeciesCategoryEnum speciesCategoryFilter,
+                                                  List<Species> filteredSpeciesByCategory,
+                                                  SpeciesClassNameEnum speciesClassNameEnum,
                                                   List<Species> filteredSpeciesByClass,
                                                   List<SpeciesMeasure> speciesMeasures) {
 
         SpeciesResponse speciesResponse = new SpeciesResponse();
+        // Species Region
+        speciesResponse.setRegion(region);
+
+        // Species filtered species by category + metrics
+        speciesResponse.getSpeciesByCategory().setCategory(speciesCategoryFilter.name());
+        speciesResponse.getSpeciesByCategory().setSpecies(filteredSpeciesByCategory);
 
         for (SpeciesMeasure speciesMeasure : speciesMeasures) {
             String concatenatedTitles = concatenateSpeciesMeasureTiles(speciesMeasure);
-            speciesResponse.getSpecies_measures()
-                    .add(new SpeciesMeasureResponse(speciesMeasure.getId(), concatenatedTitles));
+            speciesResponse
+                    .getSpeciesByCategory()
+                    .getConservationMeasures()
+                    .add(SpeciesMeasureResponse.builder()
+                            .id(speciesMeasure.getId())
+                            .titles(concatenatedTitles)
+                            .build());
         }
+
+        // Species filtered species by category + metrics
+        speciesResponse.getSpeciesByClass().setClassName(speciesClassNameEnum.name());
+        speciesResponse.getSpeciesByClass().setSpecies(filteredSpeciesByClass);
 
         return speciesResponse;
     }

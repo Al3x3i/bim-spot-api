@@ -21,7 +21,14 @@ public class IcuIntegrationServiceTest {
         SpeciesResponse speciesResponse = icuService.preview("europe", 0, SpeciesCategoryEnum.CR, SpeciesClassNameEnum.MAMMALIA);
 
         // THEN
-        then(speciesResponse.getSpecies_measures().size()).isNotZero();
+        then(speciesResponse.getRegion()).isNotNull();
+        then(speciesResponse.getSpeciesByCategory().getCategory()).isNotNull();
+        then(speciesResponse.getSpeciesByCategory().getConservationMeasures().size()).isNotZero();
+        then(speciesResponse.getSpeciesByCategory().getConservationMeasures().get(0).getId()).isNotNull();
+        then(speciesResponse.getSpeciesByCategory().getConservationMeasures().get(0).getTitles()).isNotNull();
+        then(speciesResponse.getSpeciesByCategory().getSpecies().size()).isNotZero();
+        then(speciesResponse.getSpeciesByClass().getClassName()).isNotNull();
+        then(speciesResponse.getSpeciesByClass().getSpecies().size()).isNotZero();
     }
 
     @Test
