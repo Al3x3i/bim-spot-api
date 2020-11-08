@@ -27,13 +27,16 @@ public class ICUService {
         return result;
     }
 
-    public void getSpeciesByRegion(String region, int page) {
-        String url = UriComponentsBuilder.fromUriString(REGION_SPECIES_URL)
-                .pathSegment(region, "page", String.valueOf(page))
-                .toUriString();
+    public AvailableSpecies getSpeciesByRegion(String region, int page) {
+        String url = UriComponentsBuilder.fromUriString(REGION_SPECIES_URL).pathSegment(region, "page", String.valueOf(0)).toUriString();
         String urlWithToken = setTokenToUrl(url);
 
-        String result = restTemplate.getForObject(urlWithToken, String.class);
+        AvailableSpecies result = restTemplate.getForObject(urlWithToken, AvailableSpecies.class);
+
+
+        log.info("Available '{}' species for the region '{}' from the page '{}'", result.getCount(), region, page);
+        return result;
+
     }
 
     public String setTokenToUrl(String urlPath) {
