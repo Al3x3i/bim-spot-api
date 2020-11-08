@@ -1,19 +1,14 @@
 package bim.spot.api.icu;
 
-import bim.spot.api.IcuApiProperties;
 import bim.spot.api.SpeciesResponse;
 import bim.spot.api.SpeciesResponse.SpeciesMeasureResponse;
 import bim.spot.api.icu.AvailableSpecies.Species;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import static java.util.stream.Collectors.toList;
 
@@ -22,31 +17,18 @@ import static java.util.stream.Collectors.toList;
 public class ICUService {
 
     @Autowired
-    private IcuApiProperties icuApiProperties;
-
-    public final static String REGION_LIST_URL = "/region/list";
-    public final static String REGION_SPECIES_URL = "/species/region/";
-    public final static String REGIONAL_ASSESSMENTS_URL = "/measures/species/id/{id}/region/{region}";
-
-    @Autowired
-    private RestTemplate restTemplate;
+    private IcuClient icuClient;
 
     public AvailableRegions getAllRegions() {
-        String urlWithToken = setTokenToUrl(REGION_LIST_URL);
-        AvailableRegions result = restTemplate.getForObject(urlWithToken, AvailableRegions.class);
+        AvailableRegions result = icuClient.findAvailableRegions();
         log.info("Available '{}' regions", result.getCount());
         return result;
     }
 
     public AvailableSpecies getSpeciesByRegion(String region, int page) {
-        String url = UriComponentsBuilder.fromUriString(REGION_SPECIES_URL).pathSegment(region, "page", String.valueOf(0)).toUriString();
-        String urlWithToken = setTokenToUrl(url);
-
-        AvailableSpecies result = restTemplate.getForObject(urlWithToken, AvailableSpecies.class);
-
+        AvailableSpecies result = icuClient.findSpecies(region, page);
         log.info("Available '{}' species for the region '{}' from the page '{}'", result.getCount(), region, page);
         return result;
-
     }
 
     public SpeciesResponse preview(String region, int page, SpeciesCategoryEnum speciesCategoryFilter, SpeciesClassNameEnum speciesClassNameEnum) {
@@ -55,7 +37,7 @@ public class ICUService {
 
         // 5
         List<Species> filteredSpeciesByCategory = filterSpeciesByCategory(availableSpecies.getResult(), speciesCategoryFilter);
-        log.info("Filtered '{}' species by '{}'", filteredSpeciesByCategory.size(), speciesCategoryFilter.name());
+        log.info("Filtered '{}' species by '{}' category", filteredSpeciesByCategory.size(), speciesCategoryFilter.name());
 
         List<SpeciesMeasure> speciesMeasures = new ArrayList<>();
 
@@ -73,6 +55,7 @@ public class ICUService {
 
         // 6
         List<Species> filteredSpeciesByClass = filterSpeciesByClassName(availableSpecies.getResult(), speciesClassNameEnum);
+        log.info("Filtered '{}' species by '{}' class", filteredSpeciesByCategory.size(), speciesCategoryFilter.name());
 
         SpeciesResponse response = generateResponseModel(region, speciesCategoryFilter, filteredSpeciesByCategory,
                 speciesClassNameEnum, filteredSpeciesByClass, speciesMeasures);
@@ -80,19 +63,8 @@ public class ICUService {
         return response;
     }
 
-    public String setTokenToUrl(String urlPath) {
-        return icuApiProperties.getApiUrl() + urlPath + "?token=" + icuApiProperties.getToken();
-    }
-
     SpeciesMeasure fetchConservationMeasures(String id, String region) {
-        Map<String, String> urlParams = new HashMap<>();
-        urlParams.put("id", id);
-        urlParams.put("region", region);
-
-        String url = UriComponentsBuilder.fromUriString(REGIONAL_ASSESSMENTS_URL).buildAndExpand(urlParams).toUriString();
-
-        String urlWithToken = setTokenToUrl(url);
-        SpeciesMeasure result = restTemplate.getForObject(urlWithToken, SpeciesMeasure.class);
+        SpeciesMeasure result = icuClient.findSpeciesMeasure(id, region);
         return result;
     }
 
