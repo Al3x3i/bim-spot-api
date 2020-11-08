@@ -4,7 +4,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class SpeciesMeasures {
+public class SpeciesMeasure {
     private String id;
     private String region_identifier;
     private List<Measure> result;

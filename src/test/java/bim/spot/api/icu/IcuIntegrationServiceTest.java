@@ -1,8 +1,7 @@
 package bim.spot.api.icu;
 
 
-import bim.spot.api.icu.AvailableSpecies.Species;
-import java.util.List;
+import bim.spot.api.SpeciesResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,10 +18,10 @@ public class IcuIntegrationServiceTest {
     public void should_preview() {
 
         // GIVEN // WHEN
-        List<Species> filteredSpecies = icuService.preview("europe", 0, SpeciesCategoryEnum.CR);
+        SpeciesResponse speciesResponse = icuService.preview("europe", 0, SpeciesCategoryEnum.CR);
 
         // THEN
-        then(filteredSpecies.size()).isNotZero();
+        then(speciesResponse.getSpecies_measures().size()).isNotZero();
     }
 
     @Test
@@ -51,7 +50,7 @@ public class IcuIntegrationServiceTest {
     void should_load_conservation_measures() {
 
         // GIVEN // WHEN
-        SpeciesMeasures speciesMeasures = icuService.fetchConservationMeasures("22823", "europe");
+        SpeciesMeasure speciesMeasures = icuService.fetchConservationMeasures("22823", "europe");
 
         // THEN
         then(speciesMeasures.getResult()).isNotNull();

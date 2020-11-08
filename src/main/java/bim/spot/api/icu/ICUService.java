@@ -1,10 +1,14 @@
 package bim.spot.api.icu;
 
 import bim.spot.api.IcuApiProperties;
+import bim.spot.api.SpeciesResponse;
+import bim.spot.api.SpeciesResponse.SpeciesMeasureResponse;
 import bim.spot.api.icu.AvailableSpecies.Species;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,20 +49,35 @@ public class ICUService {
 
     }
 
-    public List<Species> preview(String region, int page, SpeciesCategoryEnum speciesCategoryFilter) {
+    public SpeciesResponse preview(String region, int page, SpeciesCategoryEnum speciesCategoryFilter) {
+
         AvailableSpecies availableSpecies = getSpeciesByRegion(region, page);
 
         List<Species> filteredSpecies = filterResultBySpeciesType(availableSpecies, SpeciesCategoryEnum.CR.name());
         log.info("Filtered '{}' species by '{}'", filteredSpecies.size(), speciesCategoryFilter.name());
 
-        for (Species filteredSpecy : filteredSpecies) {
-            fetchConservationMeasures(filteredSpecy.getTaxonid(), region);
+        List<SpeciesMeasure> speciesMeasures = new ArrayList<>();
+
+        for (Species species : filteredSpecies) {
+            SpeciesMeasure speciesMeasure = fetchConservationMeasures(species.getTaxonid(), region);
+            speciesMeasures.add(speciesMeasure);
+
+            // TODO Resolve 502 Bad Gateway
+            if (speciesMeasures.size() > 1) {
+                break;
+            }
         }
 
-        return filteredSpecies;
+        SpeciesResponse response = generateResponseModel(speciesMeasures);
+
+        return response;
     }
 
-    SpeciesMeasures fetchConservationMeasures(String id, String region) {
+    public String setTokenToUrl(String urlPath) {
+        return icuApiProperties.getApiUrl() + urlPath + "?token=" + icuApiProperties.getToken();
+    }
+
+    SpeciesMeasure fetchConservationMeasures(String id, String region) {
         Map<String, String> urlParams = new HashMap<>();
         urlParams.put("id", id);
         urlParams.put("region", region);
@@ -66,7 +85,7 @@ public class ICUService {
         String url = UriComponentsBuilder.fromUriString(REGIONAL_ASSESSMENTS_URL).buildAndExpand(urlParams).toUriString();
 
         String urlWithToken = setTokenToUrl(url);
-        SpeciesMeasures result = restTemplate.getForObject(urlWithToken, SpeciesMeasures.class);
+        SpeciesMeasure result = restTemplate.getForObject(urlWithToken, SpeciesMeasure.class);
         return result;
     }
 
@@ -76,7 +95,21 @@ public class ICUService {
                 .collect(toList());
     }
 
-    public String setTokenToUrl(String urlPath) {
-        return icuApiProperties.getApiUrl() + urlPath + "?token=" + icuApiProperties.getToken();
+    String concatenateSpeciesMeasureTiles(SpeciesMeasure speciesMeasure) {
+        return speciesMeasure.getResult().stream().map(x -> x.getTitle()).collect(Collectors.joining(","));
+    }
+
+    private SpeciesResponse generateResponseModel(List<SpeciesMeasure> speciesMeasures) {
+
+        SpeciesResponse speciesResponse = new SpeciesResponse();
+
+        for (SpeciesMeasure speciesMeasure : speciesMeasures) {
+            String concatenatedTitles = concatenateSpeciesMeasureTiles(speciesMeasure);
+
+            speciesResponse.getSpecies_measures()
+                    .add(new SpeciesMeasureResponse(speciesMeasure.getId(), concatenatedTitles));
+        }
+
+        return speciesResponse;
     }
 }
