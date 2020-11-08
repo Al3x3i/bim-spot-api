@@ -1,4 +1,4 @@
-package bim.spot.api;
+package bim.spot.api.icu;
 
 import bim.spot.api.icu.IcuApiProperties;
 import java.io.IOException;
@@ -24,7 +24,8 @@ public class IcuRestTemplateInterceptor implements ClientHttpRequestInterceptor 
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
 
-        URI uri = UriComponentsBuilder.fromHttpRequest(request)
+        URI uri = UriComponentsBuilder.fromUriString(icuApiProperties.getApiUrl())
+                .path(request.getURI().toString())
                 .queryParam("token", icuApiProperties.getToken())
                 .build().toUri();
 

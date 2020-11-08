@@ -47,7 +47,7 @@ public class IcuIntegrationServiceTest {
     }
 
     @Test
-    void should_load_species_by_regions() {
+    void should_load_species_by_region() {
 
         // GIVEN // WHEN
         AvailableSpecies availableSpecies = icuService.getSpeciesByRegion("europe", 0);

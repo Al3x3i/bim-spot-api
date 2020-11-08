@@ -19,23 +19,13 @@ public class IcuClient {
     @Autowired
     RestTemplate restTemplate;
 
-    @Autowired
-    private IcuApiProperties icuApiProperties;
-
-
-    private String setTokenToUrl(String urlPath) {
-        return icuApiProperties.getApiUrl() + urlPath;
-    }
-
     public AvailableRegions findAvailableRegions() {
-        String urlWithToken = setTokenToUrl(REGION_LIST_URL);
-        return restTemplate.getForObject(urlWithToken, AvailableRegions.class);
+        return restTemplate.getForObject(REGION_LIST_URL, AvailableRegions.class);
     }
 
     public AvailableSpecies findSpecies(String region, int page) {
         String url = UriComponentsBuilder.fromUriString(REGION_SPECIES_URL).pathSegment(region, "page", String.valueOf(page)).toUriString();
-        String urlWithToken = setTokenToUrl(url);
-        return restTemplate.getForObject(urlWithToken, AvailableSpecies.class);
+        return restTemplate.getForObject(url, AvailableSpecies.class);
     }
 
     @Async("icuThreadPoolTaskExecutor")
@@ -46,8 +36,7 @@ public class IcuClient {
 
         String url = UriComponentsBuilder.fromUriString(REGIONAL_ASSESSMENTS_URL).buildAndExpand(urlParams).toUriString();
 
-        String urlWithToken = setTokenToUrl(url);
-        SpeciesMeasure result = restTemplate.getForObject(urlWithToken, SpeciesMeasure.class);
+        SpeciesMeasure result = restTemplate.getForObject(url, SpeciesMeasure.class);
 
         return CompletableFuture.completedFuture(result);
     }

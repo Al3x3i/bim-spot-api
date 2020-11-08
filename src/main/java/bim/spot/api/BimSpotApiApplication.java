@@ -1,6 +1,7 @@
 package bim.spot.api;
 
 import bim.spot.api.icu.IcuApiProperties;
+import bim.spot.api.icu.IcuRestTemplateInterceptor;
 import java.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
