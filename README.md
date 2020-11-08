@@ -2,14 +2,10 @@
 A simple app using the technology of the public IUCN Red List API.
 
 ### The root context of the API `/api/*`
-Ex:
-
-`
-localhost:8080/api/preview
-`
+Example: `localhost:8080/api/preview`
 
 ### Utils
-Convert JSON to POJO Objects in Java Online
+* Convert JSON to POJO Objects in Java Online
 
 `
 https://json2csharp.com/json-to-pojo
