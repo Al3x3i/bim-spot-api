@@ -22,8 +22,12 @@ public class IcuService {
 
     public SpeciesResponse preview(String region, int page, SpeciesCategoryEnum speciesCategoryFilter, SpeciesClassNameEnum speciesClassNameEnum) {
 
+        // Step 1
+
+
         // Step 3, 4
         AvailableSpecies availableSpecies = getSpeciesByRegion(region, page);
+        log.info("Available '{}' species in '{}' region, page nr: '{}'", availableSpecies.getResult().size(), region, page);
 
         // Step 5
         List<Species> filteredSpeciesByCategory = filterSpeciesByCategory(availableSpecies.getResult(), speciesCategoryFilter);
@@ -31,6 +35,7 @@ public class IcuService {
 
         // Step 5.1
         List<SpeciesMeasure> speciesMeasures = getSlicesMeasures(region, filteredSpeciesByCategory);
+        log.info("Fetched '{}' slices measures", speciesMeasures.size());
 
         // Step 6
         List<Species> filteredSpeciesByClass = filterSpeciesByClassName(availableSpecies.getResult(), speciesClassNameEnum);
