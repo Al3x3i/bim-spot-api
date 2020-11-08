@@ -27,7 +27,7 @@ public class IcuService {
 
     public SpeciesResponse preview(int page, SpeciesCategoryEnum speciesCategoryFilter, SpeciesClassNameEnum speciesClassNameEnum) {
 
-        // Step 1
+        // Step 1, 2
         Region region = getRandomRegion();
         log.info("Randomly selected region '{}' with identifier '{}', page nr: '{}'", region.getName(), region.getIdentifier(), page);
 
