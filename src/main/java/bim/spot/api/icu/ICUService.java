@@ -2,7 +2,9 @@ package bim.spot.api.icu;
 
 import bim.spot.api.IcuApiProperties;
 import bim.spot.api.icu.AvailableSpecies.Species;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class ICUService {
 
     public final static String REGION_LIST_URL = "/region/list";
     public final static String REGION_SPECIES_URL = "/species/region/";
+    public final static String REGIONAL_ASSESSMENTS_URL = "/measures/species/id/{id}/region/{region}";
 
     @Autowired
     private RestTemplate restTemplate;
@@ -48,7 +51,23 @@ public class ICUService {
         List<Species> filteredSpecies = filterResultBySpeciesType(availableSpecies, SpeciesCategoryEnum.CR.name());
         log.info("Filtered '{}' species by '{}'", filteredSpecies.size(), speciesCategoryFilter.name());
 
+        for (Species filteredSpecy : filteredSpecies) {
+            fetchConservationMeasures(filteredSpecy.getTaxonid(), region);
+        }
+
         return filteredSpecies;
+    }
+
+    SpeciesMeasures fetchConservationMeasures(String id, String region) {
+        Map<String, String> urlParams = new HashMap<>();
+        urlParams.put("id", id);
+        urlParams.put("region", region);
+
+        String url = UriComponentsBuilder.fromUriString(REGIONAL_ASSESSMENTS_URL).buildAndExpand(urlParams).toUriString();
+
+        String urlWithToken = setTokenToUrl(url);
+        SpeciesMeasures result = restTemplate.getForObject(urlWithToken, SpeciesMeasures.class);
+        return result;
     }
 
     List<Species> filterResultBySpeciesType(AvailableSpecies availableSpecies, String filter) {
