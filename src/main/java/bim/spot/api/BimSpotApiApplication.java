@@ -1,6 +1,8 @@
 package bim.spot.api;
 
 import bim.spot.api.icu.IcuApiProperties;
+import java.util.Collections;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,9 +22,14 @@ public class BimSpotApiApplication {
     }
 
 
+    @Autowired
+    private IcuApiProperties icuApiProperties;
+
     @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
+    public RestTemplate restTemplate(IcuApiProperties icuApiProperties) {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setInterceptors(Collections.singletonList(new IcuRestTemplateInterceptor(icuApiProperties)));
+        return restTemplate;
     }
 
     @Bean("icuThreadPoolTaskExecutor")

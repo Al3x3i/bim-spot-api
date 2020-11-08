@@ -24,7 +24,7 @@ public class IcuClient {
 
 
     private String setTokenToUrl(String urlPath) {
-        return icuApiProperties.getApiUrl() + urlPath + "?token=" + icuApiProperties.getToken();
+        return icuApiProperties.getApiUrl() + urlPath;
     }
 
     public AvailableRegions findAvailableRegions() {
