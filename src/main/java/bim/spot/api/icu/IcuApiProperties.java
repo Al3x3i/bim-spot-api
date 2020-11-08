@@ -1,4 +1,4 @@
-package bim.spot.api;
+package bim.spot.api.icu;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,6 +1,5 @@
 package bim.spot.api.icu;
 
-import bim.spot.api.IcuApiProperties;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;

@@ -1,5 +1,6 @@
 package bim.spot.api;
 
+import bim.spot.api.icu.IcuApiProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -28,7 +29,7 @@ public class BimSpotApiApplication {
     public TaskExecutor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(100);
-        executor.setMaxPoolSize(1000);
+        executor.setMaxPoolSize(100);
         executor.setQueueCapacity(500);
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setThreadNamePrefix("Async-");

@@ -21,7 +21,7 @@ public class IcuIntegrationServiceTest {
     public void should_preview() {
 
         // GIVEN // WHEN
-        SpeciesResponse speciesResponse = icuService.preview("europe", 0, SpeciesCategoryEnum.CR, SpeciesClassNameEnum.MAMMALIA);
+        SpeciesResponse speciesResponse = icuService.preview(0, SpeciesCategoryEnum.CR, SpeciesClassNameEnum.MAMMALIA);
 
         // THEN
         then(speciesResponse.getRegion()).isNotNull();
