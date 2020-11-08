@@ -14,7 +14,6 @@ public class ApiController {
     @GetMapping
     public ResponseEntity preview() {
 
-        icuService.getAllRegions();
 
         return ResponseEntity.ok().build();
     }

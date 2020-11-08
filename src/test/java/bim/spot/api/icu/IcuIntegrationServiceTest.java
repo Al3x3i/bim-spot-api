@@ -2,6 +2,7 @@ package bim.spot.api.icu;
 
 
 import bim.spot.api.SpeciesResponse;
+import bim.spot.api.icu.AvailableRegions.Region;
 import java.util.concurrent.CompletableFuture;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -34,14 +35,15 @@ public class IcuIntegrationServiceTest {
     }
 
     @Test
-    public void should_load_available_regions() {
+    public void should_select_random_region() {
 
         // GIVEN // WHEN
-        AvailableRegions availableRegions = icuService.getAllRegions();
+        Region availableRegions = icuService.getRandomRegion();
 
         // THEN
-        then(availableRegions.getCount()).isNotNull();
-        then(availableRegions.getResults().size()).isGreaterThan(0);
+        then(availableRegions).isNotNull();
+        then(availableRegions.getName()).isNotNull();
+        then(availableRegions.getIdentifier()).isNotNull();
     }
 
     @Test

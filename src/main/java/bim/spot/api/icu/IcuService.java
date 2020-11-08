@@ -2,11 +2,14 @@ package bim.spot.api.icu;
 
 import bim.spot.api.SpeciesResponse;
 import bim.spot.api.SpeciesResponse.SpeciesMeasureResponse;
+import bim.spot.api.icu.AvailableRegions.Region;
 import bim.spot.api.icu.AvailableSpecies.Species;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,9 +23,18 @@ public class IcuService {
     @Autowired
     private IcuClient icuClient;
 
-    public SpeciesResponse preview(String region, int page, SpeciesCategoryEnum speciesCategoryFilter, SpeciesClassNameEnum speciesClassNameEnum) {
+    Random rand = new Random();
+
+    public SpeciesResponse preview(int page, SpeciesCategoryEnum speciesCategoryFilter, SpeciesClassNameEnum speciesClassNameEnum) {
 
         // Step 1
+        Region region = getRandomRegion();
+        log.info("Randomly selected region '{}' with identifier '{}' region, page nr: '{}'", region.getName(), region.getName());
+
+        return preview(region.getIdentifier(), page, speciesCategoryFilter, speciesClassNameEnum);
+    }
+
+    public SpeciesResponse preview(@NonNull String region, int page, SpeciesCategoryEnum speciesCategoryFilter, SpeciesClassNameEnum speciesClassNameEnum) {
 
 
         // Step 3, 4
@@ -98,6 +110,11 @@ public class IcuService {
 
     String concatenateSpeciesMeasureTiles(SpeciesMeasure speciesMeasure) {
         return speciesMeasure.getResult().stream().map(x -> x.getTitle()).collect(Collectors.joining(","));
+    }
+
+    Region getRandomRegion() {
+        AvailableRegions regions = getAllRegions();
+        return regions.getResults().get(rand.nextInt(regions.getResults().size()));
     }
 
     private SpeciesResponse generateResponseModel(String region,
