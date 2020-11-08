@@ -24,8 +24,8 @@ public class IcuConfiguration {
     @Bean("icuThreadPoolTaskExecutor")
     public TaskExecutor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(100);
-        executor.setMaxPoolSize(100);
+        executor.setCorePoolSize(50);
+        executor.setMaxPoolSize(50);
         executor.setQueueCapacity(500);
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setThreadNamePrefix("Async-");
