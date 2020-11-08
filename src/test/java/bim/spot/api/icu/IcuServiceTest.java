@@ -14,7 +14,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 public class IcuServiceTest {
 
     @InjectMocks
-    private ICUService icuService;
+    private IcuService icuService;
 
     private AvailableSpecies availableSpecies;
 

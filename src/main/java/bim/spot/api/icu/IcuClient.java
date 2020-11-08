@@ -3,7 +3,9 @@ package bim.spot.api.icu;
 import bim.spot.api.IcuApiProperties;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -37,7 +39,8 @@ public class IcuClient {
         return restTemplate.getForObject(urlWithToken, AvailableSpecies.class);
     }
 
-    public SpeciesMeasure findSpeciesMeasure(String id, String region) {
+    @Async("icuThreadPoolTaskExecutor")
+    public CompletableFuture<SpeciesMeasure> findSpeciesMeasure(String id, String region) {
         Map<String, String> urlParams = new HashMap<>();
         urlParams.put("id", id);
         urlParams.put("region", region);
@@ -45,6 +48,8 @@ public class IcuClient {
         String url = UriComponentsBuilder.fromUriString(REGIONAL_ASSESSMENTS_URL).buildAndExpand(urlParams).toUriString();
 
         String urlWithToken = setTokenToUrl(url);
-        return restTemplate.getForObject(urlWithToken, SpeciesMeasure.class);
+        SpeciesMeasure result = restTemplate.getForObject(urlWithToken, SpeciesMeasure.class);
+
+        return CompletableFuture.completedFuture(result);
     }
 }

@@ -5,6 +5,7 @@ import bim.spot.api.SpeciesResponse.SpeciesMeasureResponse;
 import bim.spot.api.icu.AvailableSpecies.Species;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,32 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 @Slf4j
-public class ICUService {
+public class IcuService {
 
     @Autowired
     private IcuClient icuClient;
+
+    public SpeciesResponse preview(String region, int page, SpeciesCategoryEnum speciesCategoryFilter, SpeciesClassNameEnum speciesClassNameEnum) {
+
+        // Step 3, 4
+        AvailableSpecies availableSpecies = getSpeciesByRegion(region, page);
+
+        // Step 5
+        List<Species> filteredSpeciesByCategory = filterSpeciesByCategory(availableSpecies.getResult(), speciesCategoryFilter);
+        log.info("Filtered '{}' species by '{}' category", filteredSpeciesByCategory.size(), speciesCategoryFilter.name());
+
+        // Step 5.1
+        List<SpeciesMeasure> speciesMeasures = getSlicesMeasures(region, filteredSpeciesByCategory);
+
+        // Step 6
+        List<Species> filteredSpeciesByClass = filterSpeciesByClassName(availableSpecies.getResult(), speciesClassNameEnum);
+        log.info("Filtered '{}' species by '{}' class", filteredSpeciesByCategory.size(), speciesCategoryFilter.name());
+
+        SpeciesResponse response = generateResponseModel(region, speciesCategoryFilter, filteredSpeciesByCategory,
+                speciesClassNameEnum, filteredSpeciesByClass, speciesMeasures);
+
+        return response;
+    }
 
     public AvailableRegions getAllRegions() {
         AvailableRegions result = icuClient.findAvailableRegions();
@@ -31,40 +54,26 @@ public class ICUService {
         return result;
     }
 
-    public SpeciesResponse preview(String region, int page, SpeciesCategoryEnum speciesCategoryFilter, SpeciesClassNameEnum speciesClassNameEnum) {
+    public List<SpeciesMeasure> getSlicesMeasures(String region, List<Species> filteredSpeciesByCategory) {
+        int maxSlicesMeasures = 50;
 
-        AvailableSpecies availableSpecies = getSpeciesByRegion(region, page);
+        List<Species> slice = filteredSpeciesByCategory.stream()
+                .skip(0)
+                .limit(maxSlicesMeasures)
+                .collect(toList());
 
-        // 5
-        List<Species> filteredSpeciesByCategory = filterSpeciesByCategory(availableSpecies.getResult(), speciesCategoryFilter);
-        log.info("Filtered '{}' species by '{}' category", filteredSpeciesByCategory.size(), speciesCategoryFilter.name());
+        List<CompletableFuture<SpeciesMeasure>> allFutures = new ArrayList();
+        slice.forEach(item -> allFutures.add(fetchConservationMeasures(item.getTaxonid(), region)));
 
-        List<SpeciesMeasure> speciesMeasures = new ArrayList<>();
+        List<SpeciesMeasure> result = allFutures.stream()
+                .map(CompletableFuture::join)
+                .collect(toList());
 
-
-        // 5.1
-        for (Species species : filteredSpeciesByCategory) {
-            SpeciesMeasure speciesMeasure = fetchConservationMeasures(species.getTaxonid(), region);
-            speciesMeasures.add(speciesMeasure);
-
-            // TODO Resolve 502 Bad Gateway
-            if (speciesMeasures.size() > 1) {
-                break;
-            }
-        }
-
-        // 6
-        List<Species> filteredSpeciesByClass = filterSpeciesByClassName(availableSpecies.getResult(), speciesClassNameEnum);
-        log.info("Filtered '{}' species by '{}' class", filteredSpeciesByCategory.size(), speciesCategoryFilter.name());
-
-        SpeciesResponse response = generateResponseModel(region, speciesCategoryFilter, filteredSpeciesByCategory,
-                speciesClassNameEnum, filteredSpeciesByClass, speciesMeasures);
-
-        return response;
+        return result;
     }
 
-    SpeciesMeasure fetchConservationMeasures(String id, String region) {
-        SpeciesMeasure result = icuClient.findSpeciesMeasure(id, region);
+    public CompletableFuture<SpeciesMeasure> fetchConservationMeasures(String id, String region) {
+        CompletableFuture<SpeciesMeasure> result = icuClient.findSpeciesMeasure(id, region);
         return result;
     }
 
@@ -97,10 +106,11 @@ public class ICUService {
         // Species Region
         speciesResponse.setRegion(region);
 
-        // Species filtered species by category + metrics
+        // Species filtered species by Category
         speciesResponse.getSpeciesByCategory().setCategory(speciesCategoryFilter.name());
         speciesResponse.getSpeciesByCategory().setSpecies(filteredSpeciesByCategory);
 
+        // Species measures
         for (SpeciesMeasure speciesMeasure : speciesMeasures) {
             String concatenatedTitles = concatenateSpeciesMeasureTiles(speciesMeasure);
             speciesResponse
@@ -112,7 +122,7 @@ public class ICUService {
                             .build());
         }
 
-        // Species filtered species by category + metrics
+        // Species filtered species by Class
         speciesResponse.getSpeciesByClass().setClassName(speciesClassNameEnum.name());
         speciesResponse.getSpeciesByClass().setSpecies(filteredSpeciesByClass);
 

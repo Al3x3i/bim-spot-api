@@ -2,6 +2,8 @@ package bim.spot.api.icu;
 
 
 import bim.spot.api.SpeciesResponse;
+import java.util.concurrent.CompletableFuture;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,7 +14,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 public class IcuIntegrationServiceTest {
 
     @Autowired
-    private ICUService icuService;
+    private IcuService icuService;
 
     @Test
     public void should_preview() {
@@ -54,14 +56,15 @@ public class IcuIntegrationServiceTest {
     }
 
     @Test
+    @SneakyThrows
     void should_load_conservation_measures() {
 
         // GIVEN // WHEN
-        SpeciesMeasure speciesMeasures = icuService.fetchConservationMeasures("22823", "europe");
-
+        CompletableFuture<SpeciesMeasure> completableFutureResult = icuService.fetchConservationMeasures("22823", "europe");
+        SpeciesMeasure speciesMeasure = completableFutureResult.get();
         // THEN
-        then(speciesMeasures.getResult()).isNotNull();
-        then(speciesMeasures.getRegion_identifier()).isNotNull();
-        then(speciesMeasures.getResult().size()).isGreaterThan(0);
+        then(speciesMeasure.getResult()).isNotNull();
+        then(speciesMeasure.getRegion_identifier()).isNotNull();
+        then(speciesMeasure.getResult().size()).isGreaterThan(0);
     }
 }
