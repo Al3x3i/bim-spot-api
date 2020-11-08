@@ -1,7 +1,10 @@
 package bim.spot.api.icu;
 
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Data
 public class AvailableSpecies {
@@ -15,6 +18,9 @@ public class AvailableSpecies {
     private List<Species> result;
 
     @Data
+    @Builder
+    @AllArgsConstructor
+    @RequiredArgsConstructor
     public static class Species {
 
         private String taxonid;

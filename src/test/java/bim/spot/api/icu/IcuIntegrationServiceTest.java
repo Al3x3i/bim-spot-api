@@ -1,6 +1,9 @@
 package bim.spot.api.icu;
 
 
+import bim.spot.api.icu.AvailableSpecies.Species;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +16,15 @@ public class IcuIntegrationServiceTest {
     @Autowired
     private ICUService icuService;
 
+    @Test
+    public void should_preview() {
+
+        // GIVEN // WHEN
+        List<Species> filteredSpecies = icuService.preview("europe", 0, SpeciesCategoryEnum.CR);
+
+        // THEN
+        then(filteredSpecies.size()).isNotZero();
+    }
 
     @Test
     public void should_load_available_regions() {
@@ -34,5 +46,21 @@ public class IcuIntegrationServiceTest {
         // THEN
         then(availableSpecies.getCount()).isNotNull();
         then(availableSpecies.getResult().size()).isGreaterThan(0);
+    }
+
+    @Test
+    void should_filter_species() {
+        // GIVEN
+        AvailableSpecies availableSpecies = new AvailableSpecies();
+        availableSpecies.setResult(new ArrayList<>());
+        availableSpecies.getResult().add(Species.builder().category("CR").build());
+        availableSpecies.getResult().add(Species.builder().category("LC").build());
+
+        // WHEN
+        List<Species> species = icuService.filterResultBySpeciesType(availableSpecies, "CR");
+
+        // THEN
+        then(species.size()).isEqualTo(1);
+        then(species.get(0).getCategory()).isEqualTo("CR");
     }
 }
