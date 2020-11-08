@@ -18,6 +18,12 @@ dependencies {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
 
+	// Swagger
+	compile "io.springfox:springfox-swagger2:2.9.2"
+
+	// Swagger GRADLE
+	compile "io.springfox:springfox-swagger-ui:2.9.2"
+
 	//	Lombok
 	compileOnly 'org.projectlombok:lombok:1.18.16'
 	annotationProcessor 'org.projectlombok:lombok:1.18.16'
