@@ -24,4 +24,11 @@ public class IcuIntegrationServiceTest {
         then(availableRegions.getCount()).isNotNull();
         then(availableRegions.getResults().size()).isGreaterThan(0);
     }
+
+    @Test
+    void should_load_species_by_regions() {
+
+        // GIVEN // WHEN
+        icuService.getSpeciesByRegion("europe", 0);
+    }
 }

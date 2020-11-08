@@ -1,11 +1,19 @@
 package bim.spot.api;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @ConfigurationProperties(prefix = "api.icu")
 public class IcuApiProperties {
 
-    public String apiUrl = "http://apiv3.iucnredlist.org/api/v3";
+    private String apiUrl;
 
-    public String token = "9bb4facb6d23f48efbf424bb05c0c1ef1cf6f468393bc745d42179ac4aca5fee";
+    private String token;
 }
