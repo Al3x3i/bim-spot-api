@@ -16,20 +16,45 @@ public class IcuServiceTest {
     @InjectMocks
     private ICUService icuService;
 
+    private AvailableSpecies availableSpecies;
 
     @Test
-    void should_filter_species() {
+    void should_filter_species_by_category() {
         // GIVEN
-        AvailableSpecies availableSpecies = new AvailableSpecies();
-        availableSpecies.setResult(new ArrayList<>());
-        availableSpecies.getResult().add(Species.builder().category("CR").build());
-        availableSpecies.getResult().add(Species.builder().category("LC").build());
+        givenAvailableSpecies();
 
         // WHEN
-        List<Species> species = icuService.filterResultBySpeciesType(availableSpecies, "CR");
+        List<Species> species = icuService.filterSpeciesByCategory(availableSpecies.getResult(), SpeciesCategoryEnum.CR);
 
         // THEN
         then(species.size()).isEqualTo(1);
-        then(species.get(0).getCategory()).isEqualTo("CR");
+        then(species.get(0).getCategory()).isEqualTo(SpeciesCategoryEnum.CR.name());
+    }
+
+    @Test
+    void should_filter_species_by_class_name() {
+        // GIVEN
+        AvailableSpecies availableSpecies = givenAvailableSpecies();
+
+        // WHEN
+        List<Species> species = icuService.filterSpeciesByClassName(availableSpecies.getResult(), SpeciesClassNameEnum.MAMMALIA);
+
+        // THEN
+        then(species.size()).isEqualTo(1);
+        then(species.get(0).getClass_name()).isEqualTo(SpeciesClassNameEnum.MAMMALIA.name());
+    }
+
+    private AvailableSpecies givenAvailableSpecies() {
+        availableSpecies = new AvailableSpecies();
+        availableSpecies.setResult(new ArrayList<>());
+        availableSpecies.getResult().add(Species.builder()
+                .category(SpeciesCategoryEnum.CR.name())
+                .class_name(SpeciesClassNameEnum.MAMMALIA.name())
+                .build());
+        availableSpecies.getResult().add(Species.builder()
+                .category(SpeciesCategoryEnum.VU.name())
+                .class_name(SpeciesClassNameEnum.REPTILIA.name())
+                .build());
+        return availableSpecies;
     }
 }

@@ -49,16 +49,19 @@ public class ICUService {
 
     }
 
-    public SpeciesResponse preview(String region, int page, SpeciesCategoryEnum speciesCategoryFilter) {
+    public SpeciesResponse preview(String region, int page, SpeciesCategoryEnum speciesCategoryFilter, SpeciesClassNameEnum speciesClassNameEnum) {
 
         AvailableSpecies availableSpecies = getSpeciesByRegion(region, page);
 
-        List<Species> filteredSpecies = filterResultBySpeciesType(availableSpecies, SpeciesCategoryEnum.CR.name());
-        log.info("Filtered '{}' species by '{}'", filteredSpecies.size(), speciesCategoryFilter.name());
+        // 5
+        List<Species> filteredSpeciesByCategory = filterSpeciesByCategory(availableSpecies.getResult(), speciesCategoryFilter);
+        log.info("Filtered '{}' species by '{}'", filteredSpeciesByCategory.size(), speciesCategoryFilter.name());
 
         List<SpeciesMeasure> speciesMeasures = new ArrayList<>();
 
-        for (Species species : filteredSpecies) {
+
+        // 5.1
+        for (Species species : filteredSpeciesByCategory) {
             SpeciesMeasure speciesMeasure = fetchConservationMeasures(species.getTaxonid(), region);
             speciesMeasures.add(speciesMeasure);
 
@@ -68,7 +71,10 @@ public class ICUService {
             }
         }
 
-        SpeciesResponse response = generateResponseModel(speciesMeasures);
+        // 6
+        List<Species> filteredSpeciesByClass = filterSpeciesByClassName(availableSpecies.getResult(), speciesClassNameEnum);
+
+        SpeciesResponse response = generateResponseModel(filteredSpeciesByCategory, filteredSpeciesByClass, speciesMeasures);
 
         return response;
     }
@@ -89,9 +95,17 @@ public class ICUService {
         return result;
     }
 
-    List<Species> filterResultBySpeciesType(AvailableSpecies availableSpecies, String filter) {
-        return availableSpecies.getResult().stream()
-                .filter(species -> species.getCategory().equals(filter))
+    List<Species> filterSpeciesByCategory(List<Species> species, SpeciesCategoryEnum filter) {
+        String filterName = filter.name();
+        return species.stream()
+                .filter(item -> item.getCategory().equals(filterName))
+                .collect(toList());
+    }
+
+    List<Species> filterSpeciesByClassName(List<Species> species, SpeciesClassNameEnum filter) {
+        String filterName = filter.name();
+        return species.stream()
+                .filter(item -> item.getClass_name().equals(filterName))
                 .collect(toList());
     }
 
@@ -99,13 +113,14 @@ public class ICUService {
         return speciesMeasure.getResult().stream().map(x -> x.getTitle()).collect(Collectors.joining(","));
     }
 
-    private SpeciesResponse generateResponseModel(List<SpeciesMeasure> speciesMeasures) {
+    private SpeciesResponse generateResponseModel(List<Species> filteredSpeciesByCategory,
+                                                  List<Species> filteredSpeciesByClass,
+                                                  List<SpeciesMeasure> speciesMeasures) {
 
         SpeciesResponse speciesResponse = new SpeciesResponse();
 
         for (SpeciesMeasure speciesMeasure : speciesMeasures) {
             String concatenatedTitles = concatenateSpeciesMeasureTiles(speciesMeasure);
-
             speciesResponse.getSpecies_measures()
                     .add(new SpeciesMeasureResponse(speciesMeasure.getId(), concatenatedTitles));
         }
