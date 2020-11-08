@@ -29,7 +29,7 @@ public class IcuService {
 
         // Step 1
         Region region = getRandomRegion();
-        log.info("Randomly selected region '{}' with identifier '{}' region, page nr: '{}'", region.getName(), region.getName());
+        log.info("Randomly selected region '{}' with identifier '{}', page nr: '{}'", region.getName(), region.getIdentifier(), page);
 
         return preview(region.getIdentifier(), page, speciesCategoryFilter, speciesClassNameEnum);
     }
